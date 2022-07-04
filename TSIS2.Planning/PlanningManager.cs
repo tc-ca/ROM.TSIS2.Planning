@@ -1,13 +1,16 @@
-﻿using System;
-using System.Configuration;
-using Microsoft.Crm.Sdk.Messages;
+﻿using System.Configuration;
 using Microsoft.Xrm.Tooling.Connector;
 
 namespace TSIS2.Planning
 {
     public class PlanningManager
     {
-        public static void Run()
+        public string Scope = "all";
+        public PlanningManager(string scope)
+        {
+            Scope = scope;
+        }
+        public void Run()
         {
             string url = ConfigurationManager.AppSettings["Url"];
             string clientId = ConfigurationManager.AppSettings["ClientId"];
@@ -20,10 +23,40 @@ namespace TSIS2.Planning
                 //WhoAmIResponse response = (WhoAmIResponse)svc.Execute(request);
                 //Console.WriteLine("UserId is {0}", response.UserId);
 
-                TimeBasedPlanning timeBasedPlanning = new TimeBasedPlanning();
-                //Security Plan Review (TDG)
-                timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["TDGSPR_IncidentTypeId"]);
+                switch (Scope.ToLower())
+                {
+                    case "avsec":
+                        AvSecPlanning(svc);
+                        break;
+
+                    case "isso":
+                        ISSOPlanning(svc);
+                        break;
+
+                    default:
+                        AvSecPlanning(svc);
+                        ISSOPlanning(svc);
+                        break;
+                }              
             }
+        }
+
+        private void AvSecPlanning(CrmServiceClient svc)
+        {
+
+        }
+
+        private void ISSOPlanning(CrmServiceClient svc)
+        {
+            TimeBasedPlanning timeBasedPlanning = new TimeBasedPlanning();
+            //Security Plan Review (TDG)
+            timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["TDGSPR_IncidentTypeId"], 5);
+            //Comprehensive Inspection (TDG)
+            timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["TDGCI_IncidentTypeId"], 5);
+            //Security Plan Review (PAX)
+            timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["PAXSPR_IncidentTypeId"],3);
+            //Comprehensive Inspection (PAX)
+            timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["PAXCI_IncidentTypeId"],3);
         }
     }
 }
