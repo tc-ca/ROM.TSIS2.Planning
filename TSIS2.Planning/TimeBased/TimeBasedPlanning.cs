@@ -151,7 +151,7 @@ namespace TSIS2.Planning
                         {
                             workOrder["ts_tradenameid"] = tradeName;
                         }
-                        workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(ConfigurationManager.AppSettings["RationalePlannedId"]));  //Planned
+                        workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(ConfigurationManager.AppSettings["RationaleInitDraftId"]));  //Draft
                         Guid workOrderId = svc.Create(workOrder);
                         logger.Info("New Work Order Id: {0}", workOrderId);
                     }

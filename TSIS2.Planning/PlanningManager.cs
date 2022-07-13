@@ -54,9 +54,13 @@ namespace TSIS2.Planning
             //Comprehensive Inspection (TDG)
             timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["TDGCI_IncidentTypeId"], 5);
             //Security Plan Review (PAX)
-            timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["PAXSPR_IncidentTypeId"],3);
+            timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["PAXSPR_IncidentTypeId"], 3);
             //Comprehensive Inspection (PAX)
-            timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["PAXCI_IncidentTypeId"],3);
+            timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["PAXCI_IncidentTypeId"], 3);
+
+            RiskBasedPlanning riskBasedPlanning = new RiskBasedPlanning();
+            riskBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["TDGSI_IncidentTypeId"], ConfigurationManager.AppSettings["TDGVSI_IncidentTypeId"], "TDG");
+            riskBasedPlanning.GenerateWorkOrderByIncidentType(svc, ConfigurationManager.AppSettings["PAXSI_IncidentTypeId"], ConfigurationManager.AppSettings["PAXOSI_IncidentTypeId"], "PAX");
         }
     }
 }
