@@ -38,7 +38,7 @@ namespace TSIS2.Planning
             logger.Info("In total there are {0} work order(s) for incident type id {1}.", workordersToBeDelete.Entities.Count, incidentTypeId);
             foreach (var workorderToBeDelete in workordersToBeDelete.Entities)
             {
-                if (workordersToKeep == null || (workordersToKeep.Entities.Count > 0 && !workordersToKeep.Entities.Any(a => a.Id == workorderToBeDelete.Id)))
+                if (workordersToKeep == null || workordersToKeep.Entities.Count ==0 || (workordersToKeep.Entities.Count > 0 && !workordersToKeep.Entities.Any(a => a.Id == workorderToBeDelete.Id)))
                 {
                     logger.Info("Delete Work Order Name: {0}, Id {1}", workorderToBeDelete.Attributes["msdyn_name"], workorderToBeDelete.Id);
                     svc.Delete("msdyn_workorder", workorderToBeDelete.Id);
