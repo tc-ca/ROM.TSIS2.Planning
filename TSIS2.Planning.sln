@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32328.378
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32510.428
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSIS2.Planning", "TSIS2.Planning\TSIS2.Planning.csproj", "{32FB762E-E41F-4DB7-BC77-B00F1D511640}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSIS2.PlanningFunction", "TSIS2.PlanningFunction\TSIS2.PlanningFunction.csproj", "{74D0905A-0738-4316-9ED1-9E83D6E98234}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{32FB762E-E41F-4DB7-BC77-B00F1D511640}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32FB762E-E41F-4DB7-BC77-B00F1D511640}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32FB762E-E41F-4DB7-BC77-B00F1D511640}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74D0905A-0738-4316-9ED1-9E83D6E98234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74D0905A-0738-4316-9ED1-9E83D6E98234}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74D0905A-0738-4316-9ED1-9E83D6E98234}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74D0905A-0738-4316-9ED1-9E83D6E98234}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,6 +2,7 @@
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Xrm.Tooling.Connector;
 using NLog;
+using System.Configuration;
 using System.Linq;
 
 namespace TSIS2.Planning
@@ -31,6 +32,8 @@ namespace TSIS2.Planning
                         <order attribute='msdyn_name' descending='false'/>
                         <filter type='and'>
                         <condition attribute='msdyn_primaryincidenttype' operator='eq' uitype='msdyn_incidenttype' value='" + incidentTypeId + @"'/>
+                        <condition attribute='ovs_rational' operator='eq' uitype='ovs_rational' value='" + ConfigurationManager.AppSettings["RationaleInitDraftId"] + @"'/>
+
                         </filter>
                         </entity>
                         </fetch>";
