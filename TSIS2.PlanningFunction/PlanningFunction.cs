@@ -5,6 +5,7 @@ using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Tooling.Connector;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using TSIS2.PlanningFunction.Planning;
 
 namespace TSIS2.PlanningFunction
 {
@@ -77,6 +78,10 @@ namespace TSIS2.PlanningFunction
                                 break;
                             case 717750005: //TDG Security Plan Review
                                 result += timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_TDGSPR_IncidentTypeId", EnvironmentVariableTarget.Process), 5, log, ActivityType.TDGSPR, Environment.GetEnvironmentVariable("ROM_TDG_HQ_Id", EnvironmentVariableTarget.Process));
+                                break;
+                            case 717750004: //TDG Site Inspection
+                                RiskBasedPlanning riskBasedPlanning = new RiskBasedPlanning();
+                                result += riskBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_TDGSI_IncidentTypeId"), Environment.GetEnvironmentVariable("ROM_TDGVSI_IncidentTypeId"), "TDG",log);
                                 break;
                         }
                         //Update task status to Completed
