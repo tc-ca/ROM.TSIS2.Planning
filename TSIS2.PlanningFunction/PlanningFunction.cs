@@ -45,7 +45,7 @@ namespace TSIS2.PlanningFunction
                                             <value>717750000</value>
                                           </condition>
                                           <condition attribute='statecode' value='0' operator='eq'/>
-                                          <condition attribute='ts_effectivedate' value='"+ DateTime.Now.ToString("yyyy-MM-dd") + @"' operator='on-or-before'/>
+                                          <condition attribute='ts_effectivedate' value='" + DateTime.Now.ToString("yyyy-MM-dd") + @"' operator='on-or-before'/>
                                         </filter>
                                       </entity>
                                     </fetch>";
@@ -59,12 +59,24 @@ namespace TSIS2.PlanningFunction
                          .ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"));
                         //Update task status to In Progress
                         UpdatePlanningTaskStatus(svc, planningSetting, 717750001);
-
+                        TimeBasedPlanning timeBasedPlanning = new TimeBasedPlanning();
                         switch (task)
                         {
                             case 717750000: //Placeholder inspection
                                 PlaceholderInspections placeholderInspections = new PlaceholderInspections();
                                 result += placeholderInspections.GeneratePlaceHolderWorkOrders(svc, planningSetting, log);
+                                break;
+                            case 717750001: //PAX SP/SRA Review
+                                result += timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_PAXSPR_IncidentTypeId", EnvironmentVariableTarget.Process), 3, log, ActivityType.PAXSPR);
+                                break;
+                            case 717750002: //PAX Comprehensive Inspection - Large PAX
+                                result += timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_PAXCI_IncidentTypeId", EnvironmentVariableTarget.Process), 3, log, ActivityType.PAXCI, Environment.GetEnvironmentVariable("ROM_PAX_HQ_Large_Id", EnvironmentVariableTarget.Process));
+                                break;
+                            case 717750003: //PAX Comprehensive Inspection - Small PAX
+                                result += timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_PAXCI_IncidentTypeId", EnvironmentVariableTarget.Process), 5, log, ActivityType.PAXCI, Environment.GetEnvironmentVariable("ROM_PAX_HQ_Small_Id", EnvironmentVariableTarget.Process));
+                                break;
+                            case 717750005: //TDG Security Plan Review
+                                result += timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_TDGSPR_IncidentTypeId", EnvironmentVariableTarget.Process), 5, log, ActivityType.TDGSPR, Environment.GetEnvironmentVariable("ROM_TDG_HQ_Id", EnvironmentVariableTarget.Process));
                                 break;
                         }
                         //Update task status to Completed
