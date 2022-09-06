@@ -230,7 +230,16 @@ namespace TSIS2.PlanningFunction.Planning
                                             {
                                                 workOrder["ts_tradenameid"] = tradeName;
                                             }
-                                            workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(Environment.GetEnvironmentVariable("ROM_RationaleInitDraftId")));  //Draft
+
+                                            // Set the Category to 'Planned'
+                                            workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(Environment.GetEnvironmentVariable("ROM_Category_PlannedId")));  //Draft
+
+                                            //Set the state to 'Draft'
+                                            workOrder["ts_state"] = new OptionSetValue(Convert.ToInt32(717750000));
+
+                                            //Set the Origin to next years forecast
+                                            workOrder["ts_origin"] = String.Format("Forecast {0}/{1}", (DateTime.Now.AddYears(1)).ToString("yyyy"), (DateTime.Now.AddYears(2)).ToString("yy"));
+
                                             Guid workOrderId = svc.Create(workOrder);
 
                                             logMessage = String.Format("New Work Order Id: {0}", workOrderId);
