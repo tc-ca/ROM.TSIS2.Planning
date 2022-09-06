@@ -32,7 +32,11 @@ namespace TSIS2.PlanningFunction
                     {
                         workOrder["ownerid"] = planningSetting.GetAttributeValue<EntityReference>("ts_workorderowner");
                     }
-                    workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(Environment.GetEnvironmentVariable("ROM_InitDraftId", EnvironmentVariableTarget.Process)));  //Draft
+
+                    workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(Environment.GetEnvironmentVariable("ROM_Category_PlannedId", EnvironmentVariableTarget.Process)));  //Planned
+                    workOrder["ts_state"] = new OptionSetValue(Convert.ToInt32(717750000));   //Draft
+                    workOrder["ts_origin"] = String.Format("Forecast {0}/{1}", (DateTime.Now.AddYears(1)).ToString("yyyy"), (DateTime.Now.AddYears(2)).ToString("yy"));
+
                     Guid workOrderId = svc.Create(workOrder);
                     sb.AppendLine(String.Format("Created New Work Order Id {0}", workOrderId));
                 }

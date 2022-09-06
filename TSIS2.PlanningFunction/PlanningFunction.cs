@@ -79,6 +79,9 @@ namespace TSIS2.PlanningFunction
                             case 717750005: //TDG Security Plan Review
                                 result += timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_TDGSPR_IncidentTypeId", EnvironmentVariableTarget.Process), 5, log, ActivityType.TDGSPR, Environment.GetEnvironmentVariable("ROM_TDG_HQ_Id", EnvironmentVariableTarget.Process));
                                 break;
+                            case 717750006: //TDG Comprehensive Inspection
+                                result += timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_TDGCI_IncidentTypeId", EnvironmentVariableTarget.Process), 5, log, ActivityType.TDGCI, Environment.GetEnvironmentVariable("ROM_TDG_HQ_Id", EnvironmentVariableTarget.Process));
+                                break;
                             case 717750004: //TDG Site Inspection
                                 RiskBasedPlanning riskBasedPlanning = new RiskBasedPlanning();
                                 result += riskBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_TDGSI_IncidentTypeId"), Environment.GetEnvironmentVariable("ROM_TDGVSI_IncidentTypeId"), "TDG",log);
