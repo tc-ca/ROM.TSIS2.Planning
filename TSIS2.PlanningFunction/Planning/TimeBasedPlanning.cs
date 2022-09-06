@@ -114,6 +114,7 @@ namespace TSIS2.PlanningFunction
                 foreach (var operation in operations.Entities)
                 {
                     bool canBePlanned = false;
+                    bool nonSchedule1Apply = false;
                     if (string.IsNullOrWhiteSpace(HQId))
                     {
                         canBePlanned = true;
@@ -122,7 +123,7 @@ namespace TSIS2.PlanningFunction
                     {
                         canBePlanned = HQId.IndexOf(operation.GetAttributeValue<EntityReference>("ovs_operationtypeid").Id.ToString(), StringComparison.InvariantCultureIgnoreCase) >= 0;
                     }
-                    if (activityType == ActivityType.TDGSPR)
+                    if (activityType == ActivityType.TDGSPR  || activityType == ActivityType.TDGCI)
                     {
                         if (Utilities.CheckIfHQExists(svc, operation.GetAttributeValue<EntityReference>("ts_stakeholder").Id.ToString(), HQId))
                         {
@@ -131,13 +132,22 @@ namespace TSIS2.PlanningFunction
                         else
                         {
                             var dangerousgoodsType = operation.GetAttributeValue<OptionSetValue>("ts_typeofdangerousgoods")?.Value;
-                            if (dangerousgoodsType == 717750000 || dangerousgoodsType == 717750001)
+                            //If undecided or schedule 1 dangerous goods
+                            if (dangerousgoodsType == null || dangerousgoodsType == 717750001)
                             {
                                 canBePlanned = true;
                             }
+                            if (activityType == ActivityType.TDGCI)
+                            {
+                                //Non-Schedule 1 Dangerous Goods
+                                if (dangerousgoodsType == 717750002)
+                                {
+                                    nonSchedule1Apply = true;
+                                }
+                            }
                         }
                     }
-                    if (canBePlanned)
+                    if (canBePlanned || nonSchedule1Apply)
                     {
                         bool woExists = false;
                         foreach (var workOrderCandidate in workorders.Entities)
@@ -176,13 +186,22 @@ namespace TSIS2.PlanningFunction
                             workOrder["ovs_operationtypeid"] = operation.GetAttributeValue<EntityReference>("ovs_operationtypeid");
                             workOrder["ts_site"] = operation.GetAttributeValue<EntityReference>("ts_site");
                             workOrder["ts_region"] = (EntityReference)operation.GetAttributeValue<AliasedValue>("siteregion.ts_region").Value;
-                            workOrder["msdyn_primaryincidenttype"] = new EntityReference("msdyn_incidenttype", new Guid(incidentTypeId));
+                            if (nonSchedule1Apply)
+                            {
+                                workOrder["msdyn_primaryincidenttype"] = new EntityReference("msdyn_incidenttype", new Guid(Environment.GetEnvironmentVariable("ROM_TDGNS1CI_IncidentTypeId", EnvironmentVariableTarget.Process)));
+                            }
+                            else
+                            {
+                                workOrder["msdyn_primaryincidenttype"] = new EntityReference("msdyn_incidenttype", new Guid(incidentTypeId));
+                            }
                             var tradeName = Utilities.GetDefaultTradeNameByStakeHolder(svc, operation.GetAttributeValue<EntityReference>("ts_stakeholder").Id.ToString());
                             if (tradeName != null)
                             {
                                 workOrder["ts_tradenameid"] = tradeName;
                             }
-                            workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(Environment.GetEnvironmentVariable("ROM_InitDraftId", EnvironmentVariableTarget.Process)));  //Draft
+                            workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(Environment.GetEnvironmentVariable("ROM_Category_PlannedId", EnvironmentVariableTarget.Process)));  //Planned
+                            workOrder["ts_state"] = new OptionSetValue(Convert.ToInt32(717750000));   //Draft
+                            workOrder["ts_origin"] = String.Format("Forecast {0}/{1}", (DateTime.Now.AddYears(1)).ToString("yyyy"), (DateTime.Now.AddYears(2)).ToString("yy"));
                             Guid workOrderId = svc.Create(workOrder);
                             sb.AppendLine(String.Format("New Work Order Id: {0}", workOrderId));
                         }
