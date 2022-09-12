@@ -13,7 +13,7 @@ namespace TSIS2.PlanningFunction.Planning
 {
     public class RiskBasedPlanning
     {
-        public string GenerateWorkOrderByIncidentType(CrmServiceClient svc, string incidentTypeId, string altIncidentTypeId, string altFlag, TraceWriter logger)
+        public string GenerateWorkOrderByIncidentType(CrmServiceClient svc, string incidentTypeId, string altIncidentTypeId, string altFlag, TraceWriter logger, string altSecondIncidentTypeId = "")
         {
             StringBuilder stringBuilder = new StringBuilder();
             string logMessage = "";
@@ -79,6 +79,7 @@ namespace TSIS2.PlanningFunction.Planning
                     <attribute name='ts_visualsecurityinspection' />
                     <attribute name='ts_issecurityinspectionsite' />
                     <attribute name='ts_typeofdangerousgoods' />
+                    <attribute name='ts_stationtype' />
                     <order attribute='ovs_name' descending='false' />
                     <link-entity name='ovs_operationtype' from='ovs_operationtypeid' to='ovs_operationtypeid' link-type='inner' alias='ac'>
                       <link-entity name='ts_ovs_operationtypes_msdyn_incidenttypes' from='ovs_operationtypeid' to='ovs_operationtypeid' visible='false' intersect='true'>
@@ -116,6 +117,20 @@ namespace TSIS2.PlanningFunction.Planning
                             operation.GetAttributeValue<OptionSetValue>("ts_visualsecurityinspection").Value == 717750001)
                         {
                             vsi = true;
+                        }
+                    }
+                    else if(altFlag.Equals("PAX", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        //if this is a site where Security Inspections (SIs) are conducted
+                        if (operation.GetAttributeValue<OptionSetValue>("ts_issecurityinspectionsite") != null && operation.GetAttributeValue<OptionSetValue>("ts_issecurityinspectionsite").Value == 717750001)
+                        {
+                            vsi = false;
+                            si = true;
+                        }
+                        else
+                        {
+                            vsi = false;
+                            si = false;
                         }
                     }
                     else
@@ -198,6 +213,15 @@ namespace TSIS2.PlanningFunction.Planning
                                             }
                                         }
 
+                                        //Check if we are using PAX - If we are then check what kind of station is identified
+                                        bool usingPAX = altFlag.Equals("PAX", StringComparison.InvariantCultureIgnoreCase);
+                                        bool createSecondWorkOrder = false;
+
+                                        if (usingPAX)
+                                        {
+                                            createWO = true;
+                                        }
+
                                         if (createWO)
                                         {
                                             logMessage = String.Format("Create planning work order for operation: {0}, stake holder: {1}, type: {2}, site {3}, region {4} ",
@@ -225,6 +249,34 @@ namespace TSIS2.PlanningFunction.Planning
                                             {
                                                 workOrder["msdyn_primaryincidenttype"] = new EntityReference("msdyn_incidenttype", new Guid(incidentTypeId));
                                             }
+
+                                            if (usingPAX)
+                                            {
+                                                // Undecided or Central Station
+                                                if (operation.GetAttributeValue<OptionSetValue>("ts_stationtype") == null ||
+                                                    operation.GetAttributeValue<OptionSetValue>("ts_stationtype").Value == 717750000)
+                                                {
+                                                    //Make the Work Order Activity Type a 'Central Station Site Inspection'
+                                                    workOrder["msdyn_primaryincidenttype"] = new EntityReference("msdyn_incidenttype", new Guid(incidentTypeId));
+
+                                                    //If the Operation is an SI
+                                                    if (si)
+                                                    {
+                                                        //Set the flag to create a second Work Order with Activity Type 'Oversight of Security Inspection (PAX)'
+                                                        createSecondWorkOrder = true;
+                                                    }
+                                                }
+                                                // Transit/Unstaffed
+                                                else if (operation.GetAttributeValue<OptionSetValue>("ts_stationtype").Value == 717750001)
+                                                {
+                                                    //Don't create a second Work Order
+                                                    createSecondWorkOrder = false;
+
+                                                    //Make the Work Order Activity Type 'Public Transit/Unstaffed Site Inspection'
+                                                    workOrder["msdyn_primaryincidenttype"] = new EntityReference("msdyn_incidenttype", new Guid(altSecondIncidentTypeId));
+                                                }
+                                            }
+
                                             var tradeName = Utilities.GetDefaultTradeNameByStakeHolder(svc, operation.GetAttributeValue<EntityReference>("ts_stakeholder").Id.ToString());
                                             if (tradeName != null)
                                             {
@@ -245,6 +297,18 @@ namespace TSIS2.PlanningFunction.Planning
                                             logMessage = String.Format("New Work Order Id: {0}", workOrderId);
                                             logger.Info(logMessage);
                                             stringBuilder.AppendLine(logMessage);
+
+                                            //Check if a second Work Order is required
+                                            if (createSecondWorkOrder)
+                                            {
+                                                //Make the Work Order Activity Type 'Oversight of Security Inspection (PAX)'
+                                                workOrder["msdyn_primaryincidenttype"] = new EntityReference("msdyn_incidenttype", new Guid(altIncidentTypeId));
+                                                workOrderId = svc.Create(workOrder);
+
+                                                logMessage = String.Format("New Work Order Id: {0}", workOrderId);
+                                                logger.Info(logMessage);
+                                                stringBuilder.AppendLine(logMessage);
+                                            }
                                         }
                                     }
                                 }

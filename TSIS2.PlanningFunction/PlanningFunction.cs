@@ -61,6 +61,7 @@ namespace TSIS2.PlanningFunction
                         //Update task status to In Progress
                         UpdatePlanningTaskStatus(svc, planningSetting, 717750001);
                         TimeBasedPlanning timeBasedPlanning = new TimeBasedPlanning();
+                        RiskBasedPlanning riskBasedPlanning = new RiskBasedPlanning();
                         switch (task)
                         {
                             case 717750000: //Placeholder inspection
@@ -83,8 +84,10 @@ namespace TSIS2.PlanningFunction
                                 result += timeBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_TDGCI_IncidentTypeId", EnvironmentVariableTarget.Process), 5, log, ActivityType.TDGCI, Environment.GetEnvironmentVariable("ROM_TDG_HQ_Id", EnvironmentVariableTarget.Process));
                                 break;
                             case 717750004: //TDG Site Inspection
-                                RiskBasedPlanning riskBasedPlanning = new RiskBasedPlanning();
                                 result += riskBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_TDGSI_IncidentTypeId"), Environment.GetEnvironmentVariable("ROM_TDGVSI_IncidentTypeId"), "TDG",log);
+                                break;
+                            case 717750007: //PAX Site Inspection
+                                result += riskBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_PAXSI_IncidentTypeId"), Environment.GetEnvironmentVariable("ROM_PAXOSI_IncidentTypeId"), "PAX", log,Environment.GetEnvironmentVariable("ROM_PAXPTUSI_IncidentTypeId"));
                                 break;
                         }
                         //Update task status to Completed
