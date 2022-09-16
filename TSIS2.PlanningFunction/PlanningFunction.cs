@@ -89,6 +89,10 @@ namespace TSIS2.PlanningFunction
                             case 717750007: //PAX Site Inspection
                                 result += riskBasedPlanning.GenerateWorkOrderByIncidentType(svc, Environment.GetEnvironmentVariable("ROM_PAXSI_IncidentTypeId"), Environment.GetEnvironmentVariable("ROM_PAXOSI_IncidentTypeId"), "PAX", log,Environment.GetEnvironmentVariable("ROM_PAXPTUSI_IncidentTypeId"));
                                 break;
+                            case 717750008: //AvSec Planning
+                                AvSecPlanning avsecPlanning = new AvSecPlanning();
+                                result += avsecPlanning.GenerateWorkOrders(svc, log);
+                                break;
                         }
                         //Update task status to Completed
                         UpdatePlanningTaskStatus(svc, planningSetting, 717750002);
