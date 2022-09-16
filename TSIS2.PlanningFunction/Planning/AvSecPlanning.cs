@@ -75,6 +75,7 @@ namespace TSIS2.PlanningFunction
                                       <attribute name='ts_sitetype' />
                                       <attribute name='ts_class' />
                                       <attribute name='ts_region' />
+                                      <attribute name='ts_riskscore' />
                                       <filter type='and'>
                                         <condition attribute='ts_class' operator='in'>
                                           <value>717750001</value>
@@ -164,8 +165,21 @@ namespace TSIS2.PlanningFunction
                         {
                             if (riskscore != null)
                             {
-                                frequency = riskscore.GetAttributeValue<int>("ts_class2and3highriskfrequency");
-                                interval = riskscore.GetAttributeValue<int>("ts_class2and3highriskinterval");
+                                int siteRiskscore = 0;
+                                if (operationActivity.GetAttributeValue<AliasedValue>("oaf.ts_riskscore") != null)
+                                {
+                                    siteRiskscore = (int)operationActivity.GetAttributeValue<AliasedValue>("oaf.ts_riskscore").Value;
+                                }
+                                if (siteRiskscore > 5)
+                                {
+                                    frequency = riskscore.GetAttributeValue<int>("ts_class2and3highriskfrequency");
+                                    interval = riskscore.GetAttributeValue<int>("ts_class2and3highriskinterval");
+                                }
+                                else
+                                {
+                                    frequency = riskscore.GetAttributeValue<int>("ts_class2and3lowriskfrequency");
+                                    interval = riskscore.GetAttributeValue<int>("ts_class2and3lowriskinterval");
+                                }    
                             }
 
                             //If Has Site Visit
@@ -181,7 +195,8 @@ namespace TSIS2.PlanningFunction
 
                         if (isDue || isUnplanned)
                         {
-                            for (var i = 0; i < interval; i++)
+                            int recordToCreated = (int)Math.Ceiling((decimal)interval / ((frequency==0)?1: frequency));
+                            for (var i = 0; i < recordToCreated; i++)
                             {
                                 sb.AppendLine(String.Format("Create planning work order for operation: {0}, stake holder: {1}, type: {2}, site {3}, region {4}, activity {5}",
                                              operationActivity.GetAttributeValue<EntityReference>("ts_operation").Name,
@@ -191,33 +206,32 @@ namespace TSIS2.PlanningFunction
                                             ((EntityReference)operationActivity.GetAttributeValue<AliasedValue>("oaf.ts_region").Value).Name,
                                             operationActivity.GetAttributeValue<EntityReference>("ts_activity").Name));
 
-                                //Entity workOrder = new Entity("msdyn_workorder");
-                                //workOrder["msdyn_serviceaccount"] = operationActivity.GetAttributeValue<EntityReference>("ts_stakeholder");
-                                //workOrder["ovs_operationid"] = operationActivity.GetAttributeValue<EntityReference>("ts_operation");
-                                //workOrder["ovs_operationtypeid"] = (EntityReference)operationActivity.GetAttributeValue<AliasedValue>("oao.ovs_operationtypeid").Value;
-                                //workOrder["ts_site"] = operationActivity.GetAttributeValue<EntityReference>("ts_site");
-                                //workOrder["ts_region"] = (EntityReference)operationActivity.GetAttributeValue<AliasedValue>("oaf.ts_region").Value;
-                                //workOrder["msdyn_primaryincidenttype"] = operationActivity.GetAttributeValue<EntityReference>("ts_activity");
-                                //var tradeName = Utilities.GetDefaultTradeNameByStakeHolder(svc, operationActivity.GetAttributeValue<EntityReference>("ts_stakeholder").Id.ToString());
-                                //if (tradeName != null)
-                                //{
-                                //    workOrder["ts_tradenameid"] = tradeName;
-                                //}
-                                //if (isUnplanned)
-                                //{
-                                //    workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(Environment.GetEnvironmentVariable("ROM_Category_UnplannedId", EnvironmentVariableTarget.Process)));  //UnPlanned
-                                //}
-                                //else
-                                //{
-                                //    workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(Environment.GetEnvironmentVariable("ROM_Category_PlannedId", EnvironmentVariableTarget.Process)));  //Planned
-                                //}
-                                //workOrder["ts_state"] = new OptionSetValue(Convert.ToInt32(717750000));   //Draft
-                                //workOrder["ts_origin"] = String.Format("Forecast {0}/{1}", (DateTime.Now.AddYears(1)).ToString("yyyy"), (DateTime.Now.AddYears(2)).ToString("yy"));
-                                //Guid workOrderId = svc.Create(workOrder);
-                                //sb.AppendLine(String.Format("New Work Order Id: {0}", workOrderId));
+                                Entity workOrder = new Entity("msdyn_workorder");
+                                workOrder["msdyn_serviceaccount"] = operationActivity.GetAttributeValue<EntityReference>("ts_stakeholder");
+                                workOrder["ovs_operationid"] = operationActivity.GetAttributeValue<EntityReference>("ts_operation");
+                                workOrder["ovs_operationtypeid"] = (EntityReference)operationActivity.GetAttributeValue<AliasedValue>("oao.ovs_operationtypeid").Value;
+                                workOrder["ts_site"] = operationActivity.GetAttributeValue<EntityReference>("ts_site");
+                                workOrder["ts_region"] = (EntityReference)operationActivity.GetAttributeValue<AliasedValue>("oaf.ts_region").Value;
+                                workOrder["msdyn_primaryincidenttype"] = operationActivity.GetAttributeValue<EntityReference>("ts_activity");
+                                var tradeName = Utilities.GetDefaultTradeNameByStakeHolder(svc, operationActivity.GetAttributeValue<EntityReference>("ts_stakeholder").Id.ToString());
+                                if (tradeName != null)
+                                {
+                                    workOrder["ts_tradenameid"] = tradeName;
+                                }
+                                if (isUnplanned)
+                                {
+                                    workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(Environment.GetEnvironmentVariable("ROM_Category_UnplannedId", EnvironmentVariableTarget.Process)));  //UnPlanned
+                                }
+                                else
+                                {
+                                    workOrder["ovs_rational"] = new EntityReference("ovs_tyrational", new Guid(Environment.GetEnvironmentVariable("ROM_Category_PlannedId", EnvironmentVariableTarget.Process)));  //Planned
+                                }
+                                workOrder["ts_state"] = new OptionSetValue(Convert.ToInt32(717750000));   //Draft
+                                workOrder["ts_origin"] = String.Format("Forecast {0}/{1}", (DateTime.Now.AddYears(1)).ToString("yyyy"), (DateTime.Now.AddYears(2)).ToString("yy"));
+                                Guid workOrderId = svc.Create(workOrder);
+                                sb.AppendLine(String.Format("New Work Order Id: {0}", workOrderId));
                             }
                         }
-
                     }
 
                     // Check for morerecords, if it returns 1.
@@ -236,7 +250,7 @@ namespace TSIS2.PlanningFunction
                     }
                 }
 
-                sb.AppendLine(String.Format("In Total of {0} related operation activity records", recordCount));
+                sb.AppendLine(String.Format("In total of {0} related operation activity records", recordCount));
             }
             catch (Exception ex)
             {
