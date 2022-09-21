@@ -131,6 +131,8 @@ namespace TSIS2.PlanningFunction
                     {
                         var riskscoreId = ((EntityReference)operationActivity.GetAttributeValue<AliasedValue>("oai.ts_riskscore")?.Value)?.Id;
                         Entity riskscore = null;
+                        //Internal: Cycle length in years
+                        //Frequency: How many work orders per cycle
                         int frequency = 0;
                         int interval = 0;
                         if (riskscoreId != null)
@@ -146,7 +148,7 @@ namespace TSIS2.PlanningFunction
                                 var dueDate = (DateTime)operationActivity.GetAttributeValue<AliasedValue>("oat.tc_quarterend").Value;
                                 var planningDate = GetCurrentFiscalYearEndDate(); 
 
-                                if (dueDate <= planningDate)
+                                if (dueDate.Date <= planningDate.Date)
                                 {
                                     isDue = true;
                                 }
@@ -195,7 +197,7 @@ namespace TSIS2.PlanningFunction
 
                         if (isDue || isUnplanned)
                         {
-                            int recordToCreated = (int)Math.Ceiling((decimal)interval / ((frequency==0)?1: frequency));
+                            int recordToCreated = (int)Math.Ceiling((decimal)frequency / ((interval == 0)?1: interval));
                             for (var i = 0; i < recordToCreated; i++)
                             {
                                 sb.AppendLine(String.Format("Create planning work order for operation: {0}, stake holder: {1}, type: {2}, site {3}, region {4}, activity {5}",
