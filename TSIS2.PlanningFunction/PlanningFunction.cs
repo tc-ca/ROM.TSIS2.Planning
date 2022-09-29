@@ -11,8 +11,13 @@ namespace TSIS2.PlanningFunction
 {
     public static class PlanningFunction
     {
+        //Here are some examples of NCRONTAB expressions  can use for the timer trigger in Azure Functions.
+        //0 */5 * * * *	once every five minutes
+        //0 0 */2 * * *	once every two hours
+        //0 30 9 * * *	at 9:30 AM every day
+
         [FunctionName("TSIS2PlanningFunction")]
-        public static void Run([TimerTrigger("0 */5 * * * *"
+        public static void Run([TimerTrigger("0 0 */4 * * *"
             #if DEBUG
             , RunOnStartup=true
             #endif
